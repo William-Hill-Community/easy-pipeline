@@ -1,6 +1,6 @@
-import Task from 'data.task';
-import { curry, is, head, tail, map } from 'ramda';
-import consoleLogger from './consoleLogger';
+const Task = require('data.task');
+const R = require('ramda');
+const consoleLogger = require('./consoleLogger');
 
 let loggers = [consoleLogger];
 
@@ -9,42 +9,45 @@ let loggers = [consoleLogger];
 // Finally, appends a function that can return the original context
 // used in the pipeline.
 const createLogChain = (loggers, stage, context, error) => {
-  let t = head(loggers)({ stage, context, error });
-  for (let c of tail(loggers)) {
+  let t = R.head(loggers)({ stage, context, error });
+  for (let c of R.tail(loggers)) {
     t = t.chain(c);
   }
   return t.chain(() => Task.of(context));
 };
 
-export const logStart = curry((stage, context) => {
-  const startChain = map(l => l.logStart.bind(l), loggers);
+const logStart = R.curry((stage, context) => {
+  const startChain = R.map(l => l.logStart.bind(l), loggers);
   return createLogChain(startChain, stage, context);
 });
 
-export const logEnd = curry((stage, context) => {
-  const endChain = map(l => l.logEnd.bind(l), loggers);
+const logEnd = R.curry((stage, context) => {
+  const endChain = R.map(l => l.logEnd.bind(l), loggers);
   return createLogChain(endChain, stage, context);
 });
 
-export const logError = curry((stage, context, error) => {
-  const errorChain = map(l => l.logError.bind(l), loggers);
+const logError = R.curry((stage, context, error) => {
+  const errorChain = R.map(l => l.logError.bind(l), loggers);
   return createLogChain(errorChain, stage, context, error)
     .chain(() => Task.rejected(error));
 });
 
-export const registerLogger = logger => {
-  if (!is(Function, logger.logStart)) {
+const registerLogger = logger => {
+  if (!R.is(Function, logger.logStart)) {
     throw new Error('Logger must have a valid logStart function.');
   }
 
-  if (!is(Function, logger.logEnd)) {
+  if (!R.is(Function, logger.logEnd)) {
     throw new Error('Logger must have a valid logEnd function.');
   }
 
-  if (!is(Function, logger.logError)) {
+  if (!R.is(Function, logger.logError)) {
     throw new Error('Logger must have a valid logError function.');
   }
 
   loggers.push(logger);
 };
 
+module.exports = {
+  logStart, logEnd, logError, registerLogger
+};

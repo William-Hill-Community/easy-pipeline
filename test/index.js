@@ -1,9 +1,9 @@
-import Task from 'data.task';
-import sinon from 'sinon';
-import chai from 'chai';
-import { curry, is } from 'ramda';
-import proxyquire from 'proxyquire';
-import Context from '../src/context';
+const Task = require('data.task');
+const sinon = require('sinon');
+const chai = require('chai');
+const R = require('ramda');
+const proxyquire = require('proxyquire');
+const Context = require('../src/context').Context;
 
 const f1 = context => {
   return Task.of({ foo: 'a' });
@@ -34,17 +34,15 @@ describe('pipeline', () => {
     spiedF1 = sinon.spy(f1);
     spiedF2 = sinon.spy(f2);
 
-    const mod = proxyquire('../src', {
+    createPipeline = proxyquire('../src', {
       './logger': {
-        logStart: curry(logStart),
-        logEnd: curry(logEnd),
-        logError: curry(logError),
-        '@noCallThru': true,
-        __esModule: true
+        logStart: R.curry(logStart),
+        logEnd: R.curry(logEnd),
+        logError: R.curry(logError),
+        '@noCallThru': true
       }
     });
 
-    createPipeline = mod.default;
     context = {};
     pipeline = createPipeline(spiedF1, spiedF2);
   });
@@ -73,7 +71,7 @@ describe('pipeline', () => {
 
   it('should have an output of Context type', () => {
     pipeline(context).fork(chai.assert.isNotOk, o => {
-      is(Context, o).should.be.true;
+      R.is(Context, o).should.be.true;
     });
   });
 

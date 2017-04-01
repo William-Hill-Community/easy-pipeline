@@ -1,4 +1,4 @@
-import Immutable from '../src/immutable';
+const Immutable = require('../src/immutable');
 
 describe('validating the immutable class', () => {
   it('should make an immutable', () => {

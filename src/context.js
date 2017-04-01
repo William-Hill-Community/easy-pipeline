@@ -1,12 +1,12 @@
-import { is } from 'ramda';
-import eventLog from './eventLog';
-import Immutable from './immutable';
+const R = require('ramda');
+const createEventLog = require('./createEventLog');
+const Immutable = require('./immutable');
 
 const conflict = p =>
   new Error(`Cannot merge an existing property '${p}'`);
 
 const mergeMap = (newMap, name, oldMap = {}) => {
-  if (!is(Object, oldMap)) {
+  if (!R.is(Object, oldMap)) {
     return conflict(name);
   }
 
@@ -20,7 +20,7 @@ const mergeMap = (newMap, name, oldMap = {}) => {
 };
 
 const mergeArray = (newArray, name, oldArray = []) => {
-  if (!is(Array, oldArray)) {
+  if (!R.is(Array, oldArray)) {
     return conflict(name);
   }
 
@@ -30,21 +30,21 @@ const mergeArray = (newArray, name, oldArray = []) => {
   return oldArray;
 };
 
-export const appendToContext = (context, newProps) => {
+const appendToContext = (context, newProps) => {
   var currentProps = context._props;
 
   for (let p of Object.getOwnPropertyNames(newProps)) {
     const prop = newProps[p];
     let result;
-    if (is(Array, prop)) {
+    if (R.is(Array, prop)) {
       result = mergeArray(prop, p, currentProps[p]);
-    } else if (is(Object, prop)) {
+    } else if (R.is(Object, prop)) {
       result = mergeMap(prop, p, currentProps[p]);
     } else {
       result = currentProps[p] ? conflict(p) : prop;
     }
 
-    if (is(Error, result)) {
+    if (R.is(Error, result)) {
       return result;
     }
 
@@ -58,11 +58,11 @@ export const appendToContext = (context, newProps) => {
  * Context is type used to share data/services between independent stages
  * in a pipeline.
  */
-export default class Context {
+class Context {
   constructor(props = {}) {
     this.props = new Immutable(props);
     this._props = props;
-    this.log = eventLog();
+    this.log = createEventLog();
   }
 
   /**
@@ -75,3 +75,6 @@ export default class Context {
     return new Context(this._props);
   }
 };
+
+module.exports.Context = Context;
+module.exports.appendToContext = appendToContext;

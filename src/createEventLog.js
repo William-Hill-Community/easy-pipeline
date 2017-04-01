@@ -1,25 +1,25 @@
-import { is, curry } from 'ramda';
-import Task from 'data.task';
+const R = require('ramda');
+const Task = require('data.task');
 
 const emptyString = i => /^\s*$/.test(i);
 
 const resourceEventData = (eventType, type, name, data = {}) => {
-  if (!is(String, eventType) || emptyString(eventType)) {
+  if (!R.is(String, eventType) || emptyString(eventType)) {
     throw new Error('eventType must be a valid string');
   }
 
-  if (!is(String, name) || emptyString(name)) {
+  if (!R.is(String, name) || emptyString(name)) {
     throw new Error('name must be a valid string');
   }
 
-  if (!is(String, type) || emptyString(type)) {
+  if (!R.is(String, type) || emptyString(type)) {
     throw new Error('type must be a valid string');
   }
 
   return { type, name, data };
 };
 
-const resourceEventLogger = curry((events, eventType, type, name, data) => {
+const resourceEventLogger = R.curry((events, eventType, type, name, data) => {
   events.push({
     type: eventType,
     data: resourceEventData(eventType, type, name, data)
@@ -28,7 +28,7 @@ const resourceEventLogger = curry((events, eventType, type, name, data) => {
   return Task.of(data);
 });
 
-const commandOutputLogger = curry((events, eventType, data) => {
+const commandOutputLogger = R.curry((events, eventType, data) => {
   events.push({
     type: eventType,
     data
@@ -49,4 +49,6 @@ class EventLog {
   }
 }
 
-export default () => new EventLog();
+const createEventLog = () => new EventLog();
+
+module.exports = createEventLog;

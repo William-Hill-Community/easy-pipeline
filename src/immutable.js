@@ -1,20 +1,20 @@
-import { is, map } from 'ramda';
+const R = require('ramda');
 
-const isExcluded = (o) => !is(Object, o) || is(Function, o);
+const isExcluded = (o) => !R.is(Object, o) || R.is(Function, o);
 
 const toImmutable = (o) => {
-  if (isExcluded(o) || is(Immutable, o)) {
+  if (isExcluded(o) || R.is(Immutable, o)) {
     return o;
   }
 
-  if (is(Array, o)) {
-    return map(toImmutable, o);
+  if (R.is(Array, o)) {
+    return R.map(toImmutable, o);
   }
 
   return new Immutable(o);
 };
 
-export default class Immutable {
+class Immutable {
   constructor(input) {
     this._input = input;
     return new Proxy(this, {
@@ -50,3 +50,5 @@ export default class Immutable {
     });
   }
 };
+
+module.exports = Immutable;

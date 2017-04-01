@@ -1,7 +1,7 @@
-import chai from 'chai';
-import proxyquire from 'proxyquire';
-import sinon from 'sinon';
-import Task from 'data.task';
+const chai = require('chai');
+const proxyquire = require('proxyquire');
+const sinon = require('sinon');
+const Task = require('data.task');
 
 describe('logger', () => {
   let logger;
@@ -28,12 +28,9 @@ describe('logger', () => {
 
     logger = proxyquire('../src/logger', {
       './consoleLogger': {
-        default: {
-          logStart: defaultLogStart,
-          logEnd: defaultLogEnd,
-          logError: defaultLogError
-        },
-        __esModule: true,
+        logStart: defaultLogStart,
+        logEnd: defaultLogEnd,
+        logError: defaultLogError,
         '@noCallThru': true
       }
     });

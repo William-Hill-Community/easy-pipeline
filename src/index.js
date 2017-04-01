@@ -1,7 +1,9 @@
-import { prepend, append, pipeK, map, is } from 'ramda';
-import Task from 'data.task';
-import { logStart, logEnd, logError } from './logger';
-import Context, { appendToContext } from './context';
+'use strict';
+
+var R = require('ramda');
+var Task = require('data.task');
+var logger = require('./logger');
+var c = require('./context');
 
 /**
  * Takes a stage function and invokes it with an exception handler.
@@ -45,17 +47,17 @@ const wrap = (fn, config) => {
 
       // Append the props to context.
       let appended;
-      if (is(Object, props)) {
-        appended = appendToContext(context, props);
+      if (R.is(Object, props)) {
+        appended = c.appendToContext(context, props);
       } else {
         const w = {};
         w[config.name] = props;
-        appended = appendToContext(context, w);
+        appended = c.appendToContext(context, w);
       }
 
-      return is(Error, appended)
+      return R.is(Error, appended)
         ? Task.rejected(appended) : Task.of(appended);
-    }).orElse(err => logError(config, context, err));
+    }).orElse(err => logger.logError(config, context, err));
   };
 };
 
@@ -75,17 +77,17 @@ const traced = fn => {
     throw new Error('Config must specify a name');
   };
 
-  return pipeK(
-    logStart(fn.config),
+  return R.pipeK(
+    logger.logStart(fn.config),
     wrap(fn, fn.config),
-    logEnd(fn.config),
+    logger.logEnd(fn.config),
     context => Task.of(context.clone()) // Clone it for next stage.
   );
 };
 
 const echo = c => Task.of(c);
-const ensureContext = context => is(Context, context)
-  ? Task.of(context) : Task.of(new Context(context));
+const ensureContext = context => R.is(c.Context, context)
+  ? Task.of(context) : Task.of(new c.Context(context));
 
 /**
  * Take a list of stage functions, amplifies them with additional logging
@@ -93,13 +95,13 @@ const ensureContext = context => is(Context, context)
  * @param {Function} args - List of stage functions to pipeline.
  * @returns {Function} - A function that can be invoke to execute the pipeline.
  */
-export function createPipeline(...args) {
+function createPipeline(...args) {
   // Ensure that the input is always transformed to an instance of Context.
-  let fns = prepend(ensureContext, map(traced, args));
+  let fns = R.prepend(ensureContext, R.map(traced, args));
   // ramda pipeK requires at least 2 functions.
   // Therefore we always attach echo function to the end of the pipeline.
-  fns = append(echo, fns);
-  return pipeK(...fns);
+  fns = R.append(echo, fns);
+  return R.pipeK(...fns);
 };
 
-export default createPipeline;
+module.exports = createPipeline;

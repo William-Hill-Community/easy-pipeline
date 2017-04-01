@@ -1,4 +1,3 @@
-import 'babel-polyfill';
-import chai from 'chai';
+const chai = require('chai');
 
 chai.should();

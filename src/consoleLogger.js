@@ -1,9 +1,9 @@
-import Task from 'data.task';
-import { white, red } from 'chalk';
+const Task = require('data.task');
+const chalk = require('chalk');
 
 const highlight = s => s;
 let debug = false;
-let nextColor = white;
+let nextColor = chalk.white;
 
 const noop = () => { };
 
@@ -52,7 +52,7 @@ const logEnd = options => {
 
 const logError = options => {
   logEvents(options);
-  console.log(`${red('Error')} ${options.error}`);
+  console.log(`${chalk.red('Error')} ${options.error}`);
   if (options.error.stack) {
     console.log(options.error.stack);
   }
@@ -60,10 +60,11 @@ const logError = options => {
   return Task.of(options);
 };
 
-export default {
-  logStart, logEnd, logError
-};
-
-export const enableDebug = () => {
+const enableDebug = () => {
   debug = true;
 };
+
+module.exports = {
+  logStart, logEnd, logError, enableDebug
+};
+
