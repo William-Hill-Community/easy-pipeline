@@ -1,0 +1,56 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "DebugTests",
+      "type": "node",
+      "request": "launch",
+      "stopOnEntry": false,
+      "cwd": "${workspaceRoot}",
+      "preLaunchTask": "buildTests",
+      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
+      "args": [
+        "-u",
+        "exports",
+        "-R",
+        "spec",
+        "-r",
+        "out/test/setup.js",
+        "out/test/*{,*/}*.js"
+      ],
+      "runtimeArgs": [
+        "--nolazy",
+        "--debug-brk"
+      ],
+      "port": 5858,
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "internalConsole",
+      "sourceMaps": true,
+      "outDir": "${workspaceRoot}/out"
+    },
+    {
+      "name": "Debug",
+      "type": "node",
+      "request": "launch",
+      "stopOnEntry": false,
+      "args": [],
+      "cwd": "${workspaceRoot}",
+      "preLaunchTask": "build",
+      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/babel-node",
+      "program": "${workspaceRoot}/out/index.js",
+      "runtimeArgs": [
+        "--nolazy",
+        "--debug-brk"
+      ],
+      "port": 5858,
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "internalConsole",
+      "sourceMaps": true,
+      "outDir": "${workspaceRoot}/out"
+    }
+  ]
+}
