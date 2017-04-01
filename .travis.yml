@@ -10,6 +10,7 @@ matrix:
   - env: COVERAGE=true
 after_success:
 - "[ $COVERAGE == false ] || npm run istanbul -- --report text-summary"
+before_deploy: "npm version patch"
 deploy:
   provider: npm
   email: buddhike.desilva@geeksdiary.com
