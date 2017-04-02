@@ -7,7 +7,6 @@
       "request": "launch",
       "stopOnEntry": false,
       "cwd": "${workspaceRoot}",
-      "preLaunchTask": "buildTests",
       "program": "${workspaceRoot}/node_modules/.bin/_mocha",
       "args": [
         "-u",
@@ -15,8 +14,8 @@
         "-R",
         "spec",
         "-r",
-        "out/test/setup.js",
-        "out/test/*{,*/}*.js"
+        "test/setup.js",
+        "test/*{,*/}*.js"
       ],
       "runtimeArgs": [
         "--nolazy",
@@ -26,9 +25,7 @@
       "env": {
         "NODE_ENV": "development"
       },
-      "console": "internalConsole",
-      "sourceMaps": true,
-      "outDir": "${workspaceRoot}/out"
+      "console": "internalConsole"
     },
     {
       "name": "Debug",
@@ -37,9 +34,7 @@
       "stopOnEntry": false,
       "args": [],
       "cwd": "${workspaceRoot}",
-      "preLaunchTask": "build",
-      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/babel-node",
-      "program": "${workspaceRoot}/out/index.js",
+      "program": "${workspaceRoot}/src/index.js",
       "runtimeArgs": [
         "--nolazy",
         "--debug-brk"
@@ -48,9 +43,7 @@
       "env": {
         "NODE_ENV": "development"
       },
-      "console": "internalConsole",
-      "sourceMaps": true,
-      "outDir": "${workspaceRoot}/out"
+      "console": "internalConsole"
     }
   ]
 }
