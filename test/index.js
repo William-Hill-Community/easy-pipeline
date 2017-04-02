@@ -49,7 +49,7 @@ describe('pipeline', () => {
 
   it('should invoke all stages', () => {
     pipeline(context)
-      .fork(chai.assert.isNotOk, context => {
+      .fork(chai.assert.isNotOk, () => {
         spiedF1.calledOnce.should.be.true;
         spiedF2.calledOnce.should.be.true;
       });
@@ -57,14 +57,14 @@ describe('pipeline', () => {
 
   it('context should observe the side effects of all stages', () => {
     pipeline(context)
-      .fork(chai.assert.isNotOk, context => {
-        context.props.foo.should.equal('a');
-        context.props.bar.should.equal('b');
+      .fork(chai.assert.isNotOk, c => {
+        c.props.foo.should.equal('a');
+        c.props.bar.should.equal('b');
       });
   });
 
   it('second stage should observe the side effects of first', () => {
-    pipeline(context).fork(chai.assert.isNotOk, context => {
+    pipeline(context).fork(chai.assert.isNotOk, () => {
       spiedF2.getCall(0).args[0].props.foo.should.equal('a');
     });
   });
@@ -104,15 +104,51 @@ describe('pipeline', () => {
     });
   });
 
-  describe('function that does not return a Task', () => {
+  describe('stage that returns an object', () => {
     beforeEach(() => {
-      const badFunc = context => context;
-      badFunc.config = { name: 'badFunc' };
-      pipeline = createPipeline(spiedF1, badFunc, spiedF2);
+      const objectStage = c => ({ jar: 'a' });
+      objectStage.config = { name: 'object-stage' };
+      pipeline = createPipeline(spiedF1, objectStage, spiedF2);
     });
 
-    it('should reject it if the function does not return Task', () => {
-      pipeline(context).fork(chai.assert.isOk, chai.assert.isNotOk);
+    it('should pass the value to next stage as a prop', () => {
+      pipeline(context).fork(chai.assert.isNotOk, () => {
+        spiedF2.getCall(0).args[0].props.jar.should.equal('a');
+      });
+    });
+  });
+
+  describe('stage that returns a simple value', () => {
+    beforeEach(() => {
+      const simpleStage = c => 42;
+      simpleStage.config = { name: 'simple-stage' };
+      pipeline = createPipeline(spiedF1, simpleStage, spiedF2);
+    });
+
+    it('should pass the value to next stage as a prop', () => {
+      pipeline(context).fork(chai.assert.isNotOk, () => {
+        spiedF2.getCall(0).args[0].props['simple-stage'].should.equal(42);
+      });
+    });
+  });
+
+  describe('stage that does not return a value', () => {
+    beforeEach(() => {
+      const voidStage = c => { };
+      voidStage.config = { name: 'void-stage' };
+      pipeline = createPipeline(spiedF1, voidStage, spiedF2);
+    });
+
+    it('should not invoke the next stage', () => {
+      pipeline(context).fork(chai.assert.isNotOk, () => {
+        spiedF2.calledOnce.should.be.true;
+      });
+    });
+
+    it('should not attach any props', () => {
+      pipeline(context).fork(chai.assert.isNotOk, c => {
+        (c.props.f2 === undefined).should.be.true;
+      });
     });
   });
 
@@ -174,7 +210,7 @@ describe('pipeline', () => {
     });
   });
 
-  describe('of single stage', () => {
+  describe('with just one stage', () => {
     beforeEach(() => {
       pipeline = createPipeline(spiedF1);
     });
@@ -183,6 +219,15 @@ describe('pipeline', () => {
       pipeline(context).fork(chai.assert.isNotOk, () => {
         spiedF1.calledOnce.should.be.true;
       });
+    });
+  });
+
+  describe('stage without a valid name', () => {
+    it('should throw an error', () => {
+      const s = () => { };
+      s.config = {};
+      (() => createPipeline(spiedF1, s, spiedF2))
+        .should.throw(/Config must specify a name/);
     });
   });
 });

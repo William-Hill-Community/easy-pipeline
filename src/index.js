@@ -33,15 +33,15 @@ const callUserStageSafe = (fn, context) => {
  */
 const wrap = (fn, config) => {
   return context => {
-    const r = callUserStageSafe(fn, context);
+    let r = callUserStageSafe(fn, context);
     if (!(r instanceof Task)) {
-      return Task.rejected(`function ${config.name} did not return a Task`);
+      r = Task.of(r);
     }
 
     return r.chain(props => {
-      // If stage is returning the context we don't need to worry about
-      // merging the result in.
-      if (props === context) {
+      // If stage is not returning a result or echoing the context we don't
+      // need to worry about merging the result in.
+      if (!props || props === context) {
         return Task.of(context);
       }
 
