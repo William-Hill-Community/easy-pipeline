@@ -3,7 +3,7 @@
 var R = require('ramda');
 var Task = require('data.task');
 var logger = require('./logger');
-var c = require('./context');
+var ctx = require('./context');
 
 /**
  * Takes a stage function and invokes it with an exception handler.
@@ -31,7 +31,7 @@ const callUserStageSafe = (fn, context) => {
  * @param {Object} config - stage function configuration.
  * @returns {Function} - Wrapped stage function.
  */
-const wrap = (fn, config) => {
+const invokeStage = (fn, config) => {
   return context => {
     let r = callUserStageSafe(fn, context);
     if (!(r instanceof Task)) {
@@ -48,11 +48,11 @@ const wrap = (fn, config) => {
       // Append the props to context.
       let appended;
       if (R.is(Object, props)) {
-        appended = c.appendToContext(context, props);
+        appended = ctx.appendToContext(context, props);
       } else {
         const w = {};
         w[config.name] = props;
-        appended = c.appendToContext(context, w);
+        appended = ctx.appendToContext(context, w);
       }
 
       return R.is(Error, appended)
@@ -68,26 +68,27 @@ const wrap = (fn, config) => {
  * @returns {Function} - A stage function amplified with additional
  * functionality.
  */
-const traced = fn => {
-  if (!fn.config) {
+const enrichStage = fn => {
+  if (fn.__pipeline) {
     return fn;
   }
 
-  if (!fn.config.name) {
-    throw new Error('Config must specify a name');
-  };
+  fn.config = fn.config || {};
+  fn.config.name = fn.config.name || fn.name || 'anonymous-function';
 
   return R.pipeK(
     logger.logStart(fn.config),
-    wrap(fn, fn.config),
+    invokeStage(fn, fn.config),
     logger.logEnd(fn.config),
     context => Task.of(context.clone()) // Clone it for next stage.
   );
 };
 
-const echo = c => Task.of(c);
-const ensureContext = context => R.is(c.Context, context)
-  ? Task.of(context) : Task.of(new c.Context(context));
+const initContext = props =>
+  Task.of(ctx.isContext(props) ? props : ctx.newContext(props));
+
+const extractProps = context =>
+  Task.of(ctx.isContext(context) ? ctx.extractProps(context) : context);
 
 /**
  * Take a list of stage functions, amplifies them with additional logging
@@ -97,11 +98,11 @@ const ensureContext = context => R.is(c.Context, context)
  */
 function createPipeline(...args) {
   // Ensure that the input is always transformed to an instance of Context.
-  let fns = R.prepend(ensureContext, R.map(traced, args));
-  // ramda pipeK requires at least 2 functions.
-  // Therefore we always attach echo function to the end of the pipeline.
-  fns = R.append(echo, fns);
-  return R.pipeK(...fns);
+  let fns = R.prepend(initContext, R.map(enrichStage, args));
+  fns = R.append(extractProps, fns);
+  const f = R.pipeK(...fns);
+  f.__pipeline = true;
+  return f;
 };
 
 module.exports = createPipeline;

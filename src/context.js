@@ -54,6 +54,8 @@ const appendToContext = (context, newProps) => {
   return context;
 };
 
+const extractProps = context =>  context._props;
+
 /**
  * Context is type used to share data/services between independent stages
  * in a pipeline.
@@ -76,5 +78,7 @@ class Context {
   }
 };
 
-module.exports.Context = Context;
+module.exports.newContext = props => new Context(props);
 module.exports.appendToContext = appendToContext;
+module.exports.extractProps = extractProps;
+module.exports.isContext = context => R.is(Context, context);

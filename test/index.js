@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const chai = require('chai');
 const R = require('ramda');
 const proxyquire = require('proxyquire');
-const Context = require('../src/context').Context;
+const ctx = require('../src/context');
 
 const f1 = context => {
   return Task.of({ foo: 'a' });
@@ -58,8 +58,8 @@ describe('pipeline', () => {
   it('context should observe the side effects of all stages', () => {
     pipeline(context)
       .fork(chai.assert.isNotOk, c => {
-        c.props.foo.should.equal('a');
-        c.props.bar.should.equal('b');
+        c.foo.should.equal('a');
+        c.bar.should.equal('b');
       });
   });
 
@@ -69,9 +69,9 @@ describe('pipeline', () => {
     });
   });
 
-  it('should have an output of Context type', () => {
+  it('should not output the internal Context', () => {
     pipeline(context).fork(chai.assert.isNotOk, o => {
-      R.is(Context, o).should.be.true;
+      ctx.isContext(o).should.be.false;
     });
   });
 
@@ -147,7 +147,7 @@ describe('pipeline', () => {
 
     it('should not attach any props', () => {
       pipeline(context).fork(chai.assert.isNotOk, c => {
-        (c.props.f2 === undefined).should.be.true;
+        (c.f2 === undefined).should.be.true;
       });
     });
   });
@@ -222,12 +222,61 @@ describe('pipeline', () => {
     });
   });
 
-  describe('stage without a valid name', () => {
+  describe.skip('stage without a valid name', () => {
     it('should throw an error', () => {
       const s = () => { };
       s.config = {};
       (() => createPipeline(spiedF1, s, spiedF2))
         .should.throw(/Config must specify a name/);
+    });
+  });
+
+  describe('stage without a config', () => {
+    let configLessStage;
+
+    beforeEach(() => {
+      configLessStage = sinon.spy(() => Task.of({ jar: 'a' }));
+      pipeline = createPipeline(configLessStage, spiedF1);
+    });
+
+    it('should invoke the next stage', () => {
+      pipeline(context).fork(chai.assert.isNotOk, () => {
+        spiedF1.calledOnce.should.be.true;
+      });
+    });
+
+    it('should invoke the loggers with function name', () => {
+      const myStage = () => ({ jar: 'a' });
+      pipeline = createPipeline(myStage);
+
+      pipeline(context).fork(chai.assert.isNotOk, () => {
+        const c = logStart.getCall(0).args[0];
+        c.name.should.equal('myStage');
+      });
+    });
+  });
+
+  describe('of pipelines', () => {
+    let p1;
+    let p2;
+    let stage1 = () => ({ foo: 'a' });
+    let stage2 = () => ({ bar: 'b' });
+    let stage3 = () => ({ baz: 'c' });
+    let stage4 = () => ({ jaz: 'd' });
+
+    beforeEach(() => {
+      p1 = createPipeline(stage1, stage2);
+      p2 = createPipeline(stage3, stage4);
+      pipeline = createPipeline(p1, p2);
+    });
+
+    it('should invoke the stages of both pipelines', () => {
+      pipeline(context).fork(chai.assert.isNotOk, c => {
+        c.foo.should.equal('a');
+        c.bar.should.equal('b');
+        c.baz.should.equal('c');
+        c.jaz.should.equal('d');
+      });
     });
   });
 });
