@@ -76,7 +76,7 @@ class Context {
   clone() {
     return new Context(this._props);
   }
-};
+}
 
 module.exports.newContext = props => new Context(props);
 module.exports.appendToContext = appendToContext;

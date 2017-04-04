@@ -44,11 +44,11 @@ class Immutable {
       ownKeys(target) {
         return Object.keys(target._input);
       },
-      set(target, key, value) {
+      set(target, key, value) { // eslint-disable-line
         throw new TypeError(`Unable to set property ${key}`);
       }
     });
   }
-};
+}
 
 module.exports = Immutable;

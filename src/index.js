@@ -103,6 +103,6 @@ function createPipeline(...args) {
   const f = R.pipeK(...fns);
   f.__pipeline = true;
   return f;
-};
+}
 
 module.exports = createPipeline;

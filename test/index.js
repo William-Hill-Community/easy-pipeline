@@ -5,13 +5,13 @@ const R = require('ramda');
 const proxyquire = require('proxyquire');
 const ctx = require('../src/context');
 
-const f1 = context => {
+const f1 = () => {
   return Task.of({ foo: 'a' });
 };
 
 f1.config = { name: 'f1' };
 
-const f2 = context => {
+const f2 = () => {
   return Task.of({ bar: 'b' });
 };
 
@@ -106,7 +106,7 @@ describe('pipeline', () => {
 
   describe('stage that returns an object', () => {
     beforeEach(() => {
-      const objectStage = c => ({ jar: 'a' });
+      const objectStage = () => ({ jar: 'a' });
       objectStage.config = { name: 'object-stage' };
       pipeline = createPipeline(spiedF1, objectStage, spiedF2);
     });
@@ -120,7 +120,7 @@ describe('pipeline', () => {
 
   describe('stage that returns a simple value', () => {
     beforeEach(() => {
-      const simpleStage = c => 42;
+      const simpleStage = () => 42;
       simpleStage.config = { name: 'simple-stage' };
       pipeline = createPipeline(spiedF1, simpleStage, spiedF2);
     });
@@ -134,7 +134,7 @@ describe('pipeline', () => {
 
   describe('stage that does not return a value', () => {
     beforeEach(() => {
-      const voidStage = c => { };
+      const voidStage = () => { };
       voidStage.config = { name: 'void-stage' };
       pipeline = createPipeline(spiedF1, voidStage, spiedF2);
     });
@@ -222,12 +222,14 @@ describe('pipeline', () => {
     });
   });
 
-  describe.skip('stage without a valid name', () => {
-    it('should throw an error', () => {
+  describe('stage without a valid name', () => {
+    it('should use function name.', () => {
       const s = () => { };
       s.config = {};
-      (() => createPipeline(spiedF1, s, spiedF2))
-        .should.throw(/Config must specify a name/);
+      pipeline = createPipeline(s);
+      pipeline(context).fork(chai.assert.isNotOk, () => {
+        logStart.getCall(0).args[0].name.should.equal('s');
+      });
     });
   });
 
