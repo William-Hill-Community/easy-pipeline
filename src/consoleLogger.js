@@ -1,43 +1,29 @@
+/* eslint-disable no-console */
 const Task = require('data.task');
 const chalk = require('chalk');
+const logfmt = require('logfmt');
 
-const highlight = s => s;
 let debug = false;
-let nextColor = chalk.white;
-
-const noop = () => { };
-
-const resourceEventFormatter = e => {
-  return `${nextColor(highlight(e.type))} ` +
-    nextColor(`${highlight(e.data.type)} ${e.data.name}`);
+const colors = {
+  info: chalk.blue,
+  warn: chalk.yellow,
+  error: chalk.red,
+  debug: chalk.green
 };
 
-const commandOutputFormatter = noop;
-const commandErrorFormatter = noop;
-
-const defaultFormatter = JSON.stringify;
-
-const formatters = {
-  'resource-discovered': resourceEventFormatter,
-  'resource-created': resourceEventFormatter,
-  'resource-updated': resourceEventFormatter,
-  'resource-deleted': resourceEventFormatter,
-  'command-output': commandOutputFormatter,
-  'command-error': commandErrorFormatter
+const defaultFormatter = e => {
+  const color = colors[e.type];
+  return `${color(e.type.toUpperCase())} ${e.name} ${logfmt.stringify(e.data)}`;
 };
 
 const logEvents = options => {
   for (let e of options.context.log.events) {
-    const f = formatters[e.type] || defaultFormatter;
-    const formatted = f(e);
-    if (formatted) {
-      console.log(`${nextColor(options.stage.name)} ${formatted}`);
-    }
+    console.log(defaultFormatter(e));
   }
 };
 
 const logStart = options => {
-  console.log(`${nextColor(options.stage.name)} ${nextColor('started')}`);
+  console.log(`${options.stage.name} 'started`);
   if (debug) {
     console.log(options.context);
   }
@@ -46,7 +32,7 @@ const logStart = options => {
 
 const logEnd = options => {
   logEvents(options);
-  console.log(`${nextColor(options.stage.name)} ${nextColor('finished')}`);
+  console.log(`${chalk.blue(options.stage.name)} finished`);
   return Task.of(options);
 };
 
