@@ -23,7 +23,7 @@ const logEvents = options => {
 };
 
 const logStart = options => {
-  console.log(`${options.stage.name} 'started`);
+  console.log(`${options.stage.name} started`);
   if (debug) {
     console.log(options.context);
   }
@@ -32,13 +32,13 @@ const logStart = options => {
 
 const logEnd = options => {
   logEvents(options);
-  console.log(`${chalk.blue(options.stage.name)} finished`);
+  console.log(`${options.stage.name} finished`);
   return Task.of(options);
 };
 
 const logError = options => {
   logEvents(options);
-  console.log(`${chalk.red('Error')} ${options.error}`);
+  console.log(`${chalk.red('ERROR')} ${options.error}`);
   if (options.error.stack) {
     console.log(options.error.stack);
   }
@@ -53,4 +53,3 @@ const enableDebug = () => {
 module.exports = {
   logStart, logEnd, logError, enableDebug
 };
-
