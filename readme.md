@@ -3,9 +3,9 @@
 
 ## Supported node versions
 This library is written using ES 2015 features. Therefore it can only be 
-used in NodeJS 6.4.0+. 
+used in node 6.4.0+. 
 
-If you need to run it in an older version of NodeJS, code should be transpiled
+If you need to run it in an older version of node, code should be transpiled
 first.
 
 ## Install
