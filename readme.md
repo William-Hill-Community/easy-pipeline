@@ -24,7 +24,7 @@ const stageFoo = context = ( { foo: 'a' });
 const stageBar = context = ( { bar: 'b' });
 ```
 
-Once we have a stage, we can call ```createPipeline``` function to bind them 
+Once we have the stages, we can call ```createPipeline``` function to bind them 
 together to create a pipeline. 
 
 ```javascript
@@ -33,7 +33,7 @@ const createPipeline = require('easy-pipeline');
 const pipeline = createPipeline(stageFoo, stageBar);
 ```
 
-Finally the pipeline can be invoked by providing the initial input.
+Finally the pipeline can be invoked by providing the initial input (optional).
 
 ```javascript
 pipeline();
