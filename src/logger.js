@@ -8,9 +8,9 @@ let loggers = [consoleLogger];
 // Then chains it over the provided list of logger methods.
 // Finally, appends a function that can return the original context
 // used in the pipeline.
-const createLogChain = (loggers, stage, context, error) => {
-  let t = R.head(loggers)({ stage, context, error });
-  for (let c of R.tail(loggers)) {
+const createLogChain = (list, stage, context, error) => {
+  let t = R.head(list)({ stage, context, error });
+  for (let c of R.tail(list)) {
     t = t.chain(c);
   }
   return t.chain(() => Task.of(context));

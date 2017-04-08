@@ -39,7 +39,7 @@ class Immutable {
           : undefined;
       },
       has(target, key) {
-        return (key in target._input);
+        return key in target._input;
       },
       ownKeys(target) {
         return Object.keys(target._input);

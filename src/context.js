@@ -31,7 +31,7 @@ const mergeArray = (newArray, name, oldArray = []) => {
 };
 
 const appendToContext = (context, newProps) => {
-  var currentProps = context._props;
+  let currentProps = context._props;
 
   for (let p of Object.getOwnPropertyNames(newProps)) {
     const prop = newProps[p];

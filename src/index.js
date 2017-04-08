@@ -1,9 +1,9 @@
 'use strict';
 
-var R = require('ramda');
-var Task = require('data.task');
-var logger = require('./logger');
-var ctx = require('./context');
+const R = require('ramda');
+const Task = require('data.task');
+const logger = require('./logger');
+const ctx = require('./context');
 
 /**
  * Takes a stage function and invokes it with an exception handler.
