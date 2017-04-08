@@ -46,7 +46,7 @@ and stageBar.
 { foo: 'a', bar: 'b' }
 ```
 
-### Accessing the results of stages from another
+### Accessing the results of a stage from another
 Our pipeline would be little useful if we could not access the result of 
 one stage from another. ```Context``` argument passed into each stage provides
 access various useful services including the results of previous stages.
@@ -84,5 +84,4 @@ barStage.config = { name: 'my-bar-stage' };
 
 This feature can be useful if we want to have more elaborate names for our 
 stages or if we are running on node 6.4.0 where function name property is 
-not available for certain types of [expressions] (http://node.green/#ES2015-built-in-extensions-function--name--property). 
-
+not available for certain types of expressions (http://node.green/#ES2015-built-in-extensions-function--name--property). 
