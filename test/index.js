@@ -30,7 +30,7 @@ describe('pipeline', () => {
   beforeEach(() => {
     logStart = sinon.spy((a, b) => Task.of(b));
     logEnd = sinon.spy((a, b) => Task.of(b));
-    logError = sinon.spy((a, b) => Task.rejected(b));
+    logError = sinon.spy((a, b, c) => Task.rejected(c));
     spiedF1 = sinon.spy(f1);
     spiedF2 = sinon.spy(f2);
 
@@ -161,6 +161,11 @@ describe('pipeline', () => {
       pipeline = createPipeline(spiedF1, errorStage, spiedF2);
     });
 
+    it('should return the error', () => {
+      pipeline(context).fork(e => e.message.should.equal('doh'),
+        chai.assert.isNotOk);
+    });
+
     it('should not invoke the next stage', () => {
       pipeline(context).fork(() => {
         spiedF2.neverCalledWith().should.be.true;
@@ -255,6 +260,30 @@ describe('pipeline', () => {
         const c = logStart.getCall(0).args[0];
         c.name.should.equal('myStage');
       });
+    });
+  });
+
+  describe('stage that does not return anything', () => {
+    it('should not have any side effects', () => {
+      const stage = () => {};
+      pipeline = createPipeline(stage);
+      pipeline().fork(chai.assert.isNotOk, c => c.should.eql({}));
+    });
+  });
+
+  describe('stage accepting a callback', () => {
+    it('should be able to return a success result', () => {
+      const stage = (_, cb) => cb(null, { foo: 'a' });
+      pipeline = createPipeline(stage);
+      pipeline({}).fork(chai.assert.isNotOk, c => {
+        c.foo.should.equal('a');
+      });
+    });
+
+    it('should be able to return a failure result', () => {
+      const stage = (_, cb) => cb('failed');
+      pipeline = createPipeline(stage);
+      pipeline({}).fork(e => e.should.equal('failed'), chai.assert.isNotOk);
     });
   });
 

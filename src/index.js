@@ -5,6 +5,13 @@ const Task = require('data.task');
 const logger = require('./logger');
 const ctx = require('./context');
 
+const callWithCallback = (fn, context) => {
+  const cb = () => { };
+  const t = new Task(cb);
+  fn(context, cb);
+  return t;
+};
+
 /**
  * Takes a stage function and invokes it with an exception handler.
  * If stage function (written by user) fails with an unhandled exception
@@ -12,11 +19,21 @@ const ctx = require('./context');
  * of the pipeline can take appropriate actions.
  * @param {Function} fn - Stage function to invoke.
  * @param {Context} context - Context for stage function.
- * @returns {Task} - Task returned by the original stage or a rejection.
+ * @returns {Task} - Either the Task returned by the stage or a wrapper Task
+ * for all other return types.
  */
 const callUserStageSafe = (fn, context) => {
   try {
-    return fn(context);
+    if (fn.length > 1) {
+      return callWithCallback(fn, context);
+    }
+
+    let r = fn(context);
+    if (!(r instanceof Task)) {
+      r = Task.of(r);
+    }
+
+    return r;
   } catch (e) {
     return Task.rejected(e);
   }
@@ -33,31 +50,29 @@ const callUserStageSafe = (fn, context) => {
  */
 const invokeStage = (fn, config) => {
   return context => {
-    let r = callUserStageSafe(fn, context);
-    if (!(r instanceof Task)) {
-      r = Task.of(r);
-    }
+    return callUserStageSafe(fn, context)
+      .chain(props => {
+        // If stage is not returning a result or echoing the context we don't
+        // need to worry about merging the result in.
+        if (!props || props === context) {
+          return Task.of(context);
+        }
 
-    return r.chain(props => {
-      // If stage is not returning a result or echoing the context we don't
-      // need to worry about merging the result in.
-      if (!props || props === context) {
-        return Task.of(context);
-      }
+        // Append the props to context.
+        let appended;
+        if (R.is(Object, props)) {
+          appended = ctx.appendToContext(context, props);
+        } else {
+          const w = {};
+          w[config.name] = props;
+          appended = ctx.appendToContext(context, w);
+        }
 
-      // Append the props to context.
-      let appended;
-      if (R.is(Object, props)) {
-        appended = ctx.appendToContext(context, props);
-      } else {
-        const w = {};
-        w[config.name] = props;
-        appended = ctx.appendToContext(context, w);
-      }
-
-      return R.is(Error, appended)
-        ? Task.rejected(appended) : Task.of(appended);
-    }).orElse(err => logger.logError(config, context, err));
+        return R.is(Error, appended)
+          ? Task.rejected(appended) : Task.of(appended);
+      }).orElse(err => {
+        return logger.logError(config, context, err);
+      });
   };
 };
 
