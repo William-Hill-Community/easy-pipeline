@@ -92,3 +92,27 @@ barStage.config = { name: 'my-bar-stage' };
 This feature can be useful if we want to have more elaborate names for our 
 stages or if we are running on node 6.4.0 where function name property is 
 not available for certain types of expressions (http://node.green/#ES2015-built-in-extensions-function--name--property). 
+
+### Asynchronous stages
+A stage function can accept an additional argument for a callback function
+that can be called at the end of an asynchronous function to signify the success
+or failure.
+
+```javascript
+const fs = require('fs');
+
+const readFileStage = (context, cb) => {
+  fs.readFile('/etc/passwd', (err, data) => {
+    if (err) {
+      cb(err);
+    } else {
+      cb(null, { file: data });
+    }
+  });
+};
+
+const pipeline = createPipeline(readFileStage);
+pipeline();
+
+// returns: { file: 'content of /etc/passwd' }
+``` 
