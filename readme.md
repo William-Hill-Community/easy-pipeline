@@ -1,6 +1,13 @@
 # easy-pipeline
 > Framework for building pipelines in node.
 
+## Supported node versions
+This library is written using ES 2015 features. Therefore it can only be 
+used in NodeJS 6.4.0+. 
+
+If you need to run it in an older version of NodeJS, code should be transpiled
+first.
+
 ## Install
 ```sh
 npm install easy-pipeline
