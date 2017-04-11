@@ -265,7 +265,7 @@ describe('pipeline', () => {
 
   describe('stage that does not return anything', () => {
     it('should not have any side effects', () => {
-      const stage = () => {};
+      const stage = () => { };
       pipeline = createPipeline(stage);
       pipeline().fork(chai.assert.isNotOk, c => c.should.eql({}));
     });
@@ -284,6 +284,32 @@ describe('pipeline', () => {
       const stage = (_, cb) => cb('failed');
       pipeline = createPipeline(stage);
       pipeline({}).fork(e => e.should.equal('failed'), chai.assert.isNotOk);
+    });
+  });
+
+  describe('stage returning a Promise', () => {
+    let resolve;
+    let reject;
+
+    beforeEach(() => {
+      const p = new Promise((a, b) => {
+        resolve = a;
+        reject = b;
+      });
+      const stage = () => p;
+      pipeline = createPipeline(stage);
+    });
+
+    it('should be able to return a success result', () => {
+      resolve({ foo: 'a' });
+      pipeline().fork(chai.assert.isNotOk, c => {
+        c.foo.should.equal('a');
+      });
+    });
+
+    it('should be able to return a failure result', () => {
+      reject('failed');
+      pipeline().fork(e => e.should.equal('failed'), chai.assert.isNotOk);
     });
   });
 

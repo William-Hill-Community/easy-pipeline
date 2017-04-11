@@ -5,11 +5,16 @@ const Task = require('data.task');
 const logger = require('./logger');
 const ctx = require('./context');
 
-const callWithCallback = (fn, context) => {
+const invokeWithCallback = (fn, context) => {
   const cb = () => { };
   const t = new Task(cb);
   fn(context, cb);
   return t;
+};
+
+const convertPromiseToTask = p => {
+  const cb = p.then.bind(p);
+  return new Task(cb);
 };
 
 /**
@@ -25,12 +30,16 @@ const callWithCallback = (fn, context) => {
 const callUserStageSafe = (fn, context) => {
   try {
     if (fn.length > 1) {
-      return callWithCallback(fn, context);
+      return invokeWithCallback(fn, context);
     }
 
     let r = fn(context);
+    if (r instanceof Promise) {
+      return convertPromiseToTask(r);
+    }
+
     if (!(r instanceof Task)) {
-      r = Task.of(r);
+      return Task.of(r);
     }
 
     return r;
