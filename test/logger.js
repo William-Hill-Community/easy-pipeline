@@ -9,10 +9,10 @@ describe('logger', () => {
   let defaultLogEnd;
   let defaultLogError;
   let context;
-  let stage;
+  let config;
 
   beforeEach(() => {
-    stage = {
+    config = {
       name: 'test-stage'
     };
 
@@ -37,17 +37,17 @@ describe('logger', () => {
   });
 
   it('should invoke default logStart', () => {
-    logger.logStart(stage, context).fork(chai.assert.isNotOk, () => {
+    logger.logStart(config, context).fork(chai.assert.isNotOk, () => {
       defaultLogStart.calledWith({
-        stage, context, error: undefined
+        config, context, error: undefined
       }).should.be.true;
     });
   });
 
   it('should invoke default logEnd', () => {
-    logger.logEnd(stage, context).fork(chai.assert.isNotOk, () => {
+    logger.logEnd(config, context).fork(chai.assert.isNotOk, () => {
       defaultLogEnd.calledWith({
-        stage, context, error: undefined
+        config, context, error: undefined
       }).should.be.true;
     });
   });
@@ -66,33 +66,33 @@ describe('logger', () => {
     });
 
     it('should invoke the other logger logStart', () => {
-      logger.logStart(stage, context).fork(chai.assert.isNotOk, () => {
+      logger.logStart(config, context).fork(chai.assert.isNotOk, () => {
         otherLogger.logStart.calledWith({
-          stage, context, error: undefined
+          config, context, error: undefined
         }).should.be.true;
       });
     });
 
     it('should invoke the other logger logEnd', () => {
-      logger.logEnd(stage, context).fork(chai.assert.isNotOk, () => {
+      logger.logEnd(config, context).fork(chai.assert.isNotOk, () => {
         otherLogger.logEnd.calledWith({
-          stage, context, error: undefined
+          config, context, error: undefined
         }).should.be.true;
       });
     });
 
     it('should invoke default logStart', () => {
-      logger.logStart(stage, context).fork(chai.assert.isNotOk, () => {
+      logger.logStart(config, context).fork(chai.assert.isNotOk, () => {
         defaultLogStart.calledWith({
-          stage, context, error: undefined
+          config, context, error: undefined
         }).should.be.true;
       });
     });
 
     it('should invoke default logEnd', () => {
-      logger.logEnd(stage, context).fork(chai.assert.isNotOk, () => {
+      logger.logEnd(config, context).fork(chai.assert.isNotOk, () => {
         defaultLogEnd.calledWith({
-          stage, context, error: undefined
+          config, context, error: undefined
         }).should.be.true;
       });
     });
@@ -119,7 +119,7 @@ describe('logger', () => {
     it('should be preserved', () => {
       const sl = new StatefulLogger();
       logger.registerLogger(sl);
-      logger.logStart(stage, context).fork(chai.assert.isNotOk, () => {
+      logger.logStart(config, context).fork(chai.assert.isNotOk, () => {
         sl.started.should.be.true;
       });
     });

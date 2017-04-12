@@ -108,6 +108,15 @@ const enrichStage = fn => {
   );
 };
 
+const addConfigurationUtils = (fn, config) => {
+  fn.as = name => {
+    config.name = name;
+    return fn;
+  };
+
+  return fn;
+};
+
 const initContext = props =>
   Task.of(ctx.isContext(props) ? props : ctx.newContext(props));
 
@@ -121,12 +130,20 @@ const extractProps = context =>
  * @returns {Function} - A function that can be invoke to execute the pipeline.
  */
 function createPipeline(...args) {
-  // Ensure that the input is always transformed to an instance of Context.
-  let fns = R.prepend(initContext, R.map(enrichStage, args));
-  fns = R.append(extractProps, fns);
+  const plConfig = {};
+  let fns = R.concat([
+    initContext,
+    logger.logStartPipeline(plConfig)],
+    R.map(enrichStage, args));
+
+  fns = R.concat(fns, [
+    logger.logEndPipeline(plConfig),
+    extractProps]);
+
   const f = R.pipeK(...fns);
   f.__pipeline = true;
-  return f;
+
+  return addConfigurationUtils(f, plConfig);
 }
 
 module.exports = createPipeline;

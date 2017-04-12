@@ -22,8 +22,20 @@ const logEvents = options => {
   }
 };
 
+const pipelineName = options => options.name ? ` ${options.name} ` : ' ';
+
+const logStartPipeline = options => {
+  console.log(`Pipeline${pipelineName(options.config)}started`);
+  return Task.of(options);
+};
+
+const logEndPipeline = options => {
+  console.log(`Pipeline${pipelineName(options.config)}finished`);
+  return Task.of(options);
+};
+
 const logStart = options => {
-  console.log(`${options.stage.name} started`);
+  console.log(`${options.config.name} started`);
   if (debug) {
     console.log(options.context);
   }
@@ -32,7 +44,7 @@ const logStart = options => {
 
 const logEnd = options => {
   logEvents(options);
-  console.log(`${options.stage.name} finished`);
+  console.log(`${options.config.name} finished`);
   return Task.of(options);
 };
 
@@ -51,5 +63,5 @@ const enableDebug = () => {
 };
 
 module.exports = {
-  logStart, logEnd, logError, enableDebug
+  logStartPipeline, logEndPipeline, logStart, logEnd, logError, enableDebug
 };

@@ -23,11 +23,15 @@ describe('pipeline', () => {
   let pipeline;
   let spiedF1;
   let spiedF2;
+  let logStartPipeline;
+  let logEndPipeline;
   let logStart;
   let logEnd;
   let logError;
 
   beforeEach(() => {
+    logStartPipeline = sinon.spy((a, b) => Task.of(b));
+    logEndPipeline = sinon.spy((a, b) => Task.of(b));
     logStart = sinon.spy((a, b) => Task.of(b));
     logEnd = sinon.spy((a, b) => Task.of(b));
     logError = sinon.spy((a, b, c) => Task.rejected(c));
@@ -36,6 +40,8 @@ describe('pipeline', () => {
 
     createPipeline = proxyquire('../src', {
       './logger': {
+        logStartPipeline: R.curry(logStartPipeline),
+        logEndPipeline: R.curry(logEndPipeline),
         logStart: R.curry(logStart),
         logEnd: R.curry(logEnd),
         logError: R.curry(logError),
@@ -101,6 +107,18 @@ describe('pipeline', () => {
     pipeline(context).fork(chai.assert.isNotOk, () => {
       spiedF1.getCall(0).args[0].log.events.should.be.empty;
       spiedF2.getCall(0).args[0].log.events.should.be.empty;
+    });
+  });
+
+  it('should invoke logStartPipeline once', () => {
+    pipeline(context).fork(chai.assert.isNotOk, () => {
+      logStartPipeline.calledOnce.should.be.true;
+    });
+  });
+
+  it('should invoke logEndPipeline once', () => {
+    pipeline(context).fork(chai.assert.isNotOk, () => {
+      logEndPipeline.calledOnce.should.be.true;
     });
   });
 
@@ -182,6 +200,12 @@ describe('pipeline', () => {
     it('should not invoke logEnd method in logger', () => {
       pipeline(context).fork(() => {
         logEnd.neverCalledWith(errorStage.config).should.be.true;
+      }, chai.assert.isNotOk);
+    });
+
+    it('should not invoke logPipelineEnd method in logger', () => {
+      pipeline(context).fork(() => {
+        logEndPipeline.neverCalledWith(sinon.match.any).should.be.true;
       }, chai.assert.isNotOk);
     });
   });
@@ -322,9 +346,9 @@ describe('pipeline', () => {
     let stage4 = () => ({ jaz: 'd' });
 
     beforeEach(() => {
-      p1 = createPipeline(stage1, stage2);
-      p2 = createPipeline(stage3, stage4);
-      pipeline = createPipeline(p1, p2);
+      p1 = createPipeline(stage1, stage2).as('a');
+      p2 = createPipeline(stage3, stage4).as('b');
+      pipeline = createPipeline(p1, p2).as('ab');
     });
 
     it('should invoke the stages of both pipelines', () => {
@@ -333,6 +357,22 @@ describe('pipeline', () => {
         c.bar.should.equal('b');
         c.baz.should.equal('c');
         c.jaz.should.equal('d');
+      });
+    });
+
+    it('should invoke logPipelineStart for each pipeline', () => {
+      pipeline(context).fork(chai.assert.isNotOk, () => {
+        logStartPipeline.getCall(0).args[0].name.should.equal('ab');
+        logStartPipeline.getCall(1).args[0].name.should.equal('a');
+        logStartPipeline.getCall(2).args[0].name.should.equal('b');
+      });
+    });
+
+    it('should invoke logPipelineEnd for each pipeline', () => {
+      pipeline(context).fork(chai.assert.isNotOk, () => {
+        logEndPipeline.getCall(0).args[0].name.should.equal('a');
+        logEndPipeline.getCall(1).args[0].name.should.equal('b');
+        logEndPipeline.getCall(2).args[0].name.should.equal('ab');
       });
     });
   });
