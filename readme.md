@@ -94,9 +94,11 @@ stages or if we are running on node 6.4.0 where function name property is
 not available for certain types of expressions (http://node.green/#ES2015-built-in-extensions-function--name--property). 
 
 ### Asynchronous stages
-A stage function can accept an additional argument for a callback function
-that can be called at the end of an asynchronous function to signify the success
-or failure.
+We can choose between two flavours of asynchrnous stages.
+
+First one is with a stage function can accept an additional argument 
+for a callback function that can be called at the end of an asynchronous 
+function to signify the success or failure.
 
 ```javascript
 const fs = require('fs');
@@ -116,3 +118,27 @@ pipeline();
 
 // returns: { file: 'content of /etc/passwd' }
 ``` 
+
+Other option is a stage function that returns a ```Promise```.
+
+```javascript
+const asyncStage = context => {
+  return new Promise((resolve, reject) => {
+    // ...
+  });
+};
+
+const pipeline = createPipeline(asyncStage);
+pipeline();
+
+```
+
+## Pipeline API
+### as
+Specify a meaningful name to a pipeline. It's used by the loggers when 
+logging pipeline activities.
+
+```javascript
+const p = createPipeline(stage1, stage2).as('my-awesome-pipeline');
+p();
+```
