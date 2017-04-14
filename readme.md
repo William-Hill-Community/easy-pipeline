@@ -149,3 +149,15 @@ logging pipeline activities.
 const p = createPipeline(stage1, stage2).as('my-awesome-pipeline');
 p();
 ```
+
+## Logging
+There is a defined logger which has been integrated into the context, the default levels are :
+- debug
+- info 
+- warn
+- error
+
+To use the logger you just need to invoke the level on the context
+```
+context.log.debug(<data object>);
+```
