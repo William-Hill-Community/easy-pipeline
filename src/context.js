@@ -54,7 +54,7 @@ const appendToContext = (context, newProps) => {
   return context;
 };
 
-const extractProps = context =>  context._props;
+const extractProps = context => context._props;
 
 /**
  * Context is type used to share data/services between independent stages

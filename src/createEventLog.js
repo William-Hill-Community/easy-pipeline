@@ -3,20 +3,16 @@ const Task = require('data.task');
 
 const emptyString = i => /^\s*$/.test(i);
 
-const createEvent = (type, name, data = {}) => {
+const createEvent = (type, data = {}) => {
   if (!R.is(String, type) || emptyString(type)) {
     throw new Error('eventType must be a valid string');
   }
 
-  if (!R.is(String, name) || emptyString(name)) {
-    throw new Error('name must be a valid string');
-  }
-
-  return { type, name, data };
+  return { type, data };
 };
 
-const eventLogger = R.curry((events, type, name, data) => {
-  events.push(createEvent(type, name, data));
+const eventLogger = R.curry((events, type,  data) => {
+  events.push(createEvent(type, data));
 
   return Task.of(data);
 });
