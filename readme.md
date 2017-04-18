@@ -40,10 +40,14 @@ const createPipeline = require('easy-pipeline');
 const pipeline = createPipeline(stageFoo, stageBar);
 ```
 
-Finally the pipeline can be invoked by providing the initial input (optional).
+Result of ```createPipeline``` is a function that can be invoked with an input
+to the pipeline. It returns a ```Task``` which can be used to start the 
+execution of our pipeline.
+
+To start the pipeline we have to invoke the ```fork``` method.
 
 ```javascript
-pipeline();
+pipeline().fork(err => console.error(err), r => console.log(r));
 ```
 
 Result of the pipline would be the combination of return values from stageFoo 
@@ -114,7 +118,7 @@ const readFileStage = (context, cb) => {
 };
 
 const pipeline = createPipeline(readFileStage);
-pipeline();
+pipeline().fork(console.error, console.log);
 
 // returns: { file: 'content of /etc/passwd' }
 ``` 
@@ -129,11 +133,14 @@ const asyncStage = context => {
 };
 
 const pipeline = createPipeline(asyncStage);
-pipeline();
+pipeline().fork(console.error, console.log);
 
 ```
 
 ## Pipeline API
+### fork
+Starts the execution of the pipeline.
+
 ### as
 Specify a meaningful name to a pipeline. It's used by the loggers when 
 logging pipeline activities.
