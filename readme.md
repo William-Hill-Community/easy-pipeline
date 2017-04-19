@@ -138,7 +138,13 @@ pipeline().fork(console.error, console.log);
 ```
 
 ## Pipeline API
-### fork
+### fork(onError, onSuccess)
+- @param {Function} onError - Function to be invoked when there was an 
+  error during pipeline execution. It receives the ```Error``` as an 
+  argument.
+- @param {Function} onSuccess - Function to be invoked when pipeline execution
+  is finished. 
+
 Starts the execution of the pipeline.
 
 ### as
