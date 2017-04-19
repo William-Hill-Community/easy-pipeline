@@ -150,6 +150,36 @@ const p = createPipeline(stage1, stage2).as('my-awesome-pipeline');
 p();
 ```
 
+### complex pipelines
+Lets say you want to have multiple stages that must be run together, logically you can group these into a 
+shared pipeline to be consumed within another pipeline
+```
+const s1 = context = ( { foo: 'f' });
+const s2 = context = ( { bar: 'b' });
+const p1 = createPipeline(s1);
+const p2 = createPipeline(s2);
+
+const lotsOfWork = createPipeline(
+  p1,
+  p2
+);
+```
+
+You may then also have a shared stages that you want to use, this can be run along side an predefined
+shared pipeline
+```
+const s1 = context = ( { foo: 'f' });
+const s2 = context = ( { bar: 'b' });
+const p1 = createPipeline(s1);
+
+const lotsOfWork = createPipeline(
+  p1,
+  s2
+);
+```
+
+By using this you can compose complex pipelines whilst being able to reuse and even reduce the amount of code you write.
+
 ## Logging
 There is a defined logger which has been integrated into the context, the default levels are :
 - debug
