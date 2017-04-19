@@ -6,7 +6,7 @@ const logger = require('./logger');
 const ctx = require('./context');
 
 const invokeWithCallback = (fn, context) => {
-  const cb = () => { };
+  const cb = () => {};
   const t = new Task(cb);
   fn(context, cb);
   return t;
@@ -77,8 +77,8 @@ const invokeStage = (fn, config) => {
           appended = ctx.appendToContext(context, w);
         }
 
-        return R.is(Error, appended)
-          ? Task.rejected(appended) : Task.of(appended);
+        return R.is(Error, appended) ?
+          Task.rejected(appended) : Task.of(appended);
       }).orElse(err => {
         return logger.logError(config, context, err);
       });
@@ -101,6 +101,7 @@ const enrichStage = fn => {
   fn.config.name = fn.config.name || fn.name || 'anonymous-function';
 
   return R.pipeK(
+    c => ensureContext(c),
     logger.logStart(fn.config),
     invokeStage(fn, fn.config),
     logger.logEnd(fn.config),
@@ -117,7 +118,7 @@ const addConfigurationUtils = (fn, config) => {
   return fn;
 };
 
-const initContext = props =>
+const ensureContext = props =>
   Task.of(ctx.isContext(props) ? props : ctx.newContext(props));
 
 const extractProps = context =>
@@ -132,13 +133,15 @@ const extractProps = context =>
 function createPipeline(...args) {
   const plConfig = {};
   let fns = R.concat([
-    initContext,
-    logger.logStartPipeline(plConfig)],
+      ensureContext,
+      logger.logStartPipeline(plConfig)
+    ],
     R.map(enrichStage, args));
 
   fns = R.concat(fns, [
     logger.logEndPipeline(plConfig),
-    extractProps]);
+    extractProps
+  ]);
 
   const f = R.pipeK(...fns);
   f.__pipeline = true;
