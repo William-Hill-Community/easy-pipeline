@@ -1,6 +1,6 @@
 const R = require('ramda');
 const createEventLog = require('./createEventLog');
-const Immutable = require('./immutable');
+const Immutable = require('easy-immutable');
 
 const conflict = p =>
   new Error(`Cannot merge an existing property '${p}'`);
