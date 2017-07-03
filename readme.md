@@ -25,10 +25,12 @@ returns an arbitary object representing the output.
 
 ```javascript
 // Simple stage that returns an object with a property called foo.
-const stageFoo = context = ( { foo: 'a' });
+const stageFoo = context => ( { foo: 'f' });
+stageFoo.config = { name: 'my-foo-stage' };
 
 // Another stage that return an object with a property called bar.
-const stageBar = context = ( { bar: 'b' });
+const stageBar = context => ( { bar: 'b' });
+stageBar.config = { name: 'my-bar-stage' };
 ```
 
 Once we have the stages, we can call ```createPipeline``` function to bind them 
@@ -121,7 +123,7 @@ const pipeline = createPipeline(readFileStage);
 pipeline().fork(console.error, console.log);
 
 // returns: { file: 'content of /etc/passwd' }
-``` 
+```
 
 Other option is a stage function that returns a ```Promise```.
 
