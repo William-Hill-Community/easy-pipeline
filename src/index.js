@@ -70,7 +70,14 @@ const invokeStage = (fn, config) => {
         // Append the props to context.
         let appended;
         if (R.is(Object, props)) {
-          appended = ctx.appendToContext(context, props);
+          let resultProps;
+          if (config.useNameAsObject) {
+            resultProps = {}
+            resultProps[config.name] = props
+          } else {
+            resultProps = props
+          }
+          appended = ctx.appendToContext(context, resultProps)
         } else {
           const w = {};
           w[config.name] = props;
